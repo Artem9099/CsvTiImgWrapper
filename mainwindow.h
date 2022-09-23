@@ -17,6 +17,7 @@
 #include <QtCharts/QPieSlice>
 #include <cmath>
 #include <shlobj.h>
+#include <QtXml>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -45,7 +46,8 @@ private:
     int iImageHight = 50;
     QString sImageExtension = ".png";
     int iChartTheme = 0;
-    int iCsvHandlingModeAfterConvert = 1;
+    int iDataFileHandlingModeAfterConvert = 1;
+    QString sChartTitle;
 
 
 public:
@@ -58,11 +60,13 @@ private slots:
 private:
     Ui::MainWindow *ui;
     void SetValueList(int resolution);
-    void LoadFileContent();
+    void LoadCsvContent();
+    void LoadXmlContent();
     void DrawLineChart();
     void LoadConfigs();
     void SetTheme();
-    void MoveCsvInSubfolder();
-    void DeleteCsv();
+    void MoveDataFileInSubfolder();
+    void DeleteDataFile();
+    void LoadFileContent();
 };
 #endif // MAINWINDOW_H

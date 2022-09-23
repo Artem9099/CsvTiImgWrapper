@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
         for (int i=0; i < filenames.size(); i++) {
             sFilePath = filenames.at(i);
         }
-        if(sFilePath.right(3).toLower() == "csv") {
+        if(sFilePath.right(3).toLower() == "csv" || sFilePath.right(3).toLower() == "xml") {
             LoadFileContent();
             DrawLineChart();
         }
@@ -22,6 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
             qDebug() << "Ungültige Datei oder Datei nicht gefunden!";
         }
     }
+//    // Test
+//    sFilePath = "C:/Users/Artem_Starovojt/Desktop/test/test.xml";
+//    LoadFileContent();
+//    DrawLineChart();
 }
 
 MainWindow::~MainWindow()
@@ -68,6 +72,15 @@ void MainWindow::SetValueList(int resolution) {
 }
 
 void MainWindow::LoadFileContent() {
+    if(sFilePath.right(3).toLower() == "xml") {
+        LoadXmlContent();
+    }
+    else {
+        LoadCsvContent();
+    }
+}
+
+void MainWindow::LoadCsvContent() {
     file.setFileName(sFilePath);
     fileTextCpy = "";
     newText = "";
@@ -95,10 +108,46 @@ void MainWindow::LoadFileContent() {
     iPointsTotal = posCounter;
 }
 
+void MainWindow::LoadXmlContent() {
+    QDomDocument measureXml;
+    file.setFileName(sFilePath);
+    newText = "";
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+        measureXml.setContent(&file);
+        file.close();
+        posCounter = 0;
+
+        QDomElement root = measureXml.documentElement();
+        QDomElement node = root.firstChild().toElement();
+
+        if(node.tagName() == "MAIN.Druckrampe"){
+            while(!node.isNull()){
+                QDomNodeList axis = node.childNodes();
+                QString x = axis.item(0).toElement().text();
+                QString y = axis.item(1).toElement().text();
+
+                newText.append(x).append(cDelimiter).append(y).append("\n");
+                node = node.nextSibling().toElement();
+                posCounter++;
+            }
+        }
+        node = node.nextSibling().toElement();
+    }
+    iPointsTotal = posCounter;
+    //qDebug() << newText;
+}
+
 void MainWindow::DrawLineChart() {
     QLineSeries *series = new QLineSeries();
 
-    series->setName("CAT");
+    sFilePath.replace('\\', '/');
+    QStringList splitPath = sFilePath.split('/');
+    splitPath = splitPath[splitPath.count() - 1].split('.');
+    sChartTitle = splitPath[0];
+
+    series->setName(sChartTitle);
 
     SetValueList(100);
 
@@ -157,12 +206,12 @@ void MainWindow::DrawLineChart() {
 
     chartView->grab().save(imagePath);
 
-    switch (iCsvHandlingModeAfterConvert) {
+    switch (iDataFileHandlingModeAfterConvert) {
     case 1: // Move csv file in a subfolder
-        MoveCsvInSubfolder();
+        MoveDataFileInSubfolder();
         break;
     case 2: // Remove the csv file
-        DeleteCsv();
+        DeleteDataFile();
         break;
     default:
         break;
@@ -199,8 +248,8 @@ void MainWindow::LoadConfigs() {
     sImageExtension = mainVal.toString();
     mainVal = obj.value(QString("chartTheme"));
     iChartTheme = mainVal.toInt();
-    mainVal = obj.value(QString("csvHandlingModeAfterConvert"));
-    iCsvHandlingModeAfterConvert = mainVal.toInt();
+    mainVal = obj.value(QString("dataFileHandlingModeAfterConvert"));
+    iDataFileHandlingModeAfterConvert = mainVal.toInt();
 
     if(sDelimiter.contains("TAB", Qt::CaseInsensitive)) {
         cDelimiter = '\t';
@@ -213,15 +262,16 @@ void MainWindow::LoadConfigs() {
     }
 }
 
-void MainWindow::MoveCsvInSubfolder() {
-    QStringList splitPath = sFilePath.split('\\');
+void MainWindow::MoveDataFileInSubfolder() {
+    sFilePath.replace('\\', '/');
+    QStringList splitPath = sFilePath.split('/');
     QString newPath = "";
     QString newFileDir = "";
 
     for (int var = 0; var < splitPath.count() - 1; var++) {
         newPath += (splitPath[var] + "/");
     }
-    newFileDir = newPath + "Csv-Files";
+    newFileDir = newPath + "DataFiles";
     newPath = newFileDir + "/" + splitPath[splitPath.count() - 1];
 
     QDir outputDir(newFileDir);
@@ -235,7 +285,7 @@ void MainWindow::MoveCsvInSubfolder() {
     QFile::rename(sFilePath, newPath);
 }
 
-void MainWindow::DeleteCsv() {
+void MainWindow::DeleteDataFile() {
     QStringList splitPath = sFilePath.split('.');
     QString imagePath = splitPath[0] + sImageExtension;
 
