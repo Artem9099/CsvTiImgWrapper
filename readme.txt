@@ -19,7 +19,7 @@ Die Datei ist wie folgt aufgebaut:
     "imageHight": 600,
     "imageExtension": ".png",
     "chartTheme": 2,
-    "csvHandlingModeAfterConvert": 1
+    "dataFileHandlingModeAfterConvert": 1
 }
 
 - delimeter: Die CSV-Datei kann auf verschiedene Art und Weise aufgebaut sein.
@@ -42,10 +42,10 @@ Im amerikanischen Raum wird gerne ein COMMA (,) verwendet.
     5 = HighContrast
     6 = BlueIcy
 
-- csvHandlingModeAfterConvert: Hier kann die Art für die Behandlung der CSV-Datei nach dem Umwandeln eingestellt werden.
+- dataFileHandlingModeAfterConvert: Hier kann die Art für die Behandlung der CSV/XML Datei nach dem Umwandeln eingestellt werden.
     0 = Keine Behandlung
-    1 = Verschiebe die CSV-Datei in einen Unterordner namens "Csv-Files"
-    2 = Lösche die CSV-Datei
+    1 = Verschiebe die CSV/XML Datei in einen Unterordner namens "DataFiles"
+    2 = Lösche die CSV/XML Datei
 
 
 
