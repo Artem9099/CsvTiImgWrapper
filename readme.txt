@@ -1,5 +1,5 @@
 Version:
-CsvToImgWrapper v1.0
+CsvToImgWrapper v1.1
 
 Beschreibung:
 CsvToImgWrapper wandelt eine beliebige CSV-Datei in eine Bilddatei um.
