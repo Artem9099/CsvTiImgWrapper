@@ -48,6 +48,7 @@ private:
     int iChartTheme = 0;
     int iDataFileHandlingModeAfterConvert = 1;
     QString sChartTitle;
+    bool bAddLimitSeries;
 
 
 public:
@@ -68,5 +69,6 @@ private:
     void MoveDataFileInSubfolder();
     void DeleteDataFile();
     void LoadFileContent();
+    int GetLimitValue(QString filename);
 };
 #endif // MAINWINDOW_H

@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 //    // Test
-//    sFilePath = "C:/Users/Artem_Starovojt/Desktop/test/test.xml";
+//    sFilePath = "D:/Users/Artem_Starovojt/Desktop/test/20_0PSI_3.xml";
 //    LoadFileContent();
 //    DrawLineChart();
 }
@@ -122,7 +122,7 @@ void MainWindow::LoadXmlContent() {
         QDomElement root = measureXml.documentElement();
         QDomElement node = root.firstChild().toElement();
 
-        if(node.tagName() == "MAIN.Druckrampe"){
+        if(node.tagName() == "DATA"){
             while(!node.isNull()){
                 QDomNodeList axis = node.childNodes();
                 QString x = axis.item(0).toElement().text();
@@ -141,6 +141,7 @@ void MainWindow::LoadXmlContent() {
 
 void MainWindow::DrawLineChart() {
     QLineSeries *series = new QLineSeries();
+    QLineSeries *limitSeries = new QLineSeries();
 
     sFilePath.replace('\\', '/');
     QStringList splitPath = sFilePath.split('/');
@@ -148,6 +149,11 @@ void MainWindow::DrawLineChart() {
     sChartTitle = splitPath[0];
 
     series->setName(sChartTitle);
+    limitSeries->setName(QString::number(GetLimitValue(sChartTitle)) + " PSI");
+    QPen pen = limitSeries->pen();
+    pen.setWidth(3);
+    pen.setBrush(QBrush("red")); // or just pen.setColor("red");
+
 
     SetValueList(100);
 
@@ -159,10 +165,16 @@ void MainWindow::DrawLineChart() {
     }
 
     qDebug() << "Messpunkte insgesamt: " + QString::number(iPointsTotal) + " Messpunkte in der Grafik: " + QString::number(iPointsOut);
+    limitSeries->append(dlTimeList[0], GetLimitValue(sChartTitle));
+    limitSeries->append(dlTimeList[dlTimeList.count() - 1], GetLimitValue(sChartTitle));
 
     QChart *chart = new QChart();
 
     chart->addSeries(series);
+    if(bAddLimitSeries) {
+        chart->addSeries(limitSeries);
+    }
+
     chart->createDefaultAxes();
     chart->setTitle("Messung");
     chart->legend()->setVisible(true);
@@ -203,6 +215,8 @@ void MainWindow::DrawLineChart() {
         chartView->chart()->setTheme(QChart::ChartThemeLight);
         break;
     }
+
+    limitSeries->setPen(pen);
 
     chartView->grab().save(imagePath);
 
@@ -250,6 +264,8 @@ void MainWindow::LoadConfigs() {
     iChartTheme = mainVal.toInt();
     mainVal = obj.value(QString("dataFileHandlingModeAfterConvert"));
     iDataFileHandlingModeAfterConvert = mainVal.toInt();
+    mainVal = obj.value(QString("addLimitSeries"));
+    bAddLimitSeries = mainVal.toBool();
 
     if(sDelimiter.contains("TAB", Qt::CaseInsensitive)) {
         cDelimiter = '\t';
@@ -300,7 +316,12 @@ void MainWindow::DeleteDataFile() {
     }
 }
 
+int MainWindow::GetLimitValue(QString filename) {
+    QStringList splitName = filename.split('_');
+    int value = splitName[0].toInt();
 
+    return value;
+}
 
 
 
